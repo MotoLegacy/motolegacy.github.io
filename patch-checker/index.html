@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html ng-app="patch">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <title>PatchChecker</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Custom fonts for this template -->
+    <link
+      href="https://use.fontawesome.com/releases/v5.0.6/css/all.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic,900,900italic"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!-- Plugin CSS -->
+    <link href="vendor/magnific-popup/magnific-popup.css" rel="stylesheet" />
+
+    <!-- Custom styles for this template -->
+    <link href="css/creative.css" rel="stylesheet" />
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.11/angular.min.js"></script>
+  </head>
+
+  <body id="page-top" ng-controller="angularController">
+    <script>
+      function get(name) {
+        if (
+          (name = new RegExp(
+            "[?&]" + encodeURIComponent(name) + "=([^&]*)"
+          ).exec(location.search))
+        )
+          return decodeURIComponent(name[1]);
+      }
+
+      angular
+        .module("patch", [])
+        .controller("angularController", function ($scope, $http, $filter) {
+          $scope.views = [];
+          $scope.views.push([]);
+          $scope.views.push([]);
+          $scope.views.push([]);
+          $scope.views.push([]);
+          $scope.views.push([]);
+
+          var pagination = true;
+          var page = 1;
+          while (pagination) {
+            if (page == 4) pagination = false;
+            $http
+              .get(
+                "https://api.github.com/repos/MotoLegacy/PatchChecker-List/issues?state=open&page=" +
+                  page +
+                  "&per_page=100"
+              )
+              .success(function (data) {
+                var i = 0,
+                  j = 0;
+                for (i = 0; i < data.length; i++) {
+                  data[i].status = 0;
+                  data[i].color = "000000";
+                  for (j = 0; j < data[i].labels.length; j++) {
+
+                    /* Playability Status */
+                    if (data[i].labels[j].name == "Playable") {
+                      data[i].color = data[i].labels[j].color;
+                      data[i].status = 1;
+                      data[i].tag = "Playable";
+                    } else if (data[i].labels[j].name == "Patch Necessary") {
+                      if (data[i].status != 0) continue;
+                      data[i].color = data[i].labels[j].color;
+                      data[i].status = 2;
+                      data[i].tag = "Patch Necessary";
+                    } else if (data[i].labels[j].name.indexOf("Patch Required") >= 0) {
+                      data[i].color = data[i].labels[j].color;
+                      data[i].status = 3;
+                      data[i].tag = "Patch Required";
+                    } else if (data[i].labels[j].name.indexOf("Always Online") >= 0) {
+                      data[i].color = data[i].labels[j].color;
+                      data[i].status = 4;
+                      data[i].tag = "Always Online";
+                    }
+
+                    /* Platforms */
+                    else if (data[i].labels[j].name.indexOf("PlayStation 3") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "PS3";
+                    } else if (data[i].labels[j].name.indexOf("PlayStation 4") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "PS4";
+                    } else if (data[i].labels[j].name.indexOf("PlayStation 5") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "PS5";
+                    } else if (data[i].labels[j].name.indexOf("Xbox (2001)") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "Xbox";
+                    } else if (data[i].labels[j].name.indexOf("Xbox 360") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "360";
+                    } else if (data[i].labels[j].name.indexOf("Xbox One") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "XBONE";
+                    } else if (data[i].labels[j].name.indexOf("Xbox Series X|S") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "X|S";
+                    } else if (data[i].labels[j].name.indexOf("Nintendo Wii U") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "Wii U";
+                    } else if (data[i].labels[j].name.indexOf("Nintendo Switch") >= 0) {
+                      data[i].plat_color = data[i].labels[j].color;
+                      data[i].plat = "Switch";
+                    } 
+                    
+                    /* Offers Patches */
+                    data[i].patch_color = "#757575";
+                    if (data[i].labels[j].name.indexOf("Offers Patch") >= 0) {
+                      data[i].patch = "Yes";
+                    } else {
+                      data[i].patch = "No";
+                    }
+                  }
+                  if (data[i].status > 0) {
+                    $scope.views[data[i].status].push(data[i]);
+                  }
+                  $scope.views[0].push(data[i]);
+                  $scope.data = $scope.views[0];
+                  $scope.data = $filter("orderBy")($scope.data, "title", false);
+                }
+              })
+              .error(function () {
+                pagination = false;
+              });
+            page++;
+          }
+
+          $scope.changeView = function (field) {
+            $scope.data = $scope.views[field];
+            $scope.data = $filter("orderBy")($scope.data, "title", false);
+          };
+
+          // Angular filter
+          $scope.filterEntries = function (val) {
+            return function (entry) {
+              if (val == undefined) return true;
+              return (
+                entry.title.toLowerCase().indexOf(val.toLowerCase() || "") !==
+                -1
+              );
+            };
+          };
+        });
+    </script>
+
+    <section class="text-white" id="compatibility">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 mx-auto">
+            <div class="text-center">
+              <h2 class="section-heading">
+                <a style="font-size: 40px">PatchChecker</a>
+                <br>
+                <a style="font-size: 24px">
+                  Does my Game require a Title Update or Internet Access to Play?
+                </a>
+              </h2>
+            </div>
+            <hr class="my-4" />
+            <div style="text-indent: 20px">
+              Modern video games are a preservation nightmare. Taking off in popularity
+              with the Xbox 360 and PlayStation 3, Title Updates became a part of games,
+              a way for developers to supply additional content or fixes for the game
+              without publishing new physical media for software. Convenient
+              for both parties, yes, but when the update servers go down, this content
+              is lost with no (legal) way of preserving it for the future.
+            </div>
+            <br>
+            <div style="text-indent: 20px">
+              Additionally, publishers eventually discovered it was cheaper to not ship
+              the software in a playable state on the disc, only storing portions 
+              (if any) of the data on a smaller size disc, and making an internet
+              connection a requirement for initial play. This makes the games of this
+              nature on your shelf completely useless. We're also entering a new era where 
+              games will lock features or the entire game behind an active internet 
+              connection throughout the duration of your play.
+            </div>
+            <br>
+            <div style="text-indent: 20px">
+              This is a community-supported list of games of these natures. So, as
+              a consumer, you can make educated purchases on physical game content. It uses
+              <a href="https://github.com/MotoLegacy/PatchChecker-List/issues">GitHub issues</a> 
+              as a medium for contribution. Clicking on an entry directs you to said "issue" 
+              which will provide more detail on the limitations of a title.
+            </div>
+          </div>
+          <div class="col-lg-12 mx-auto text-center">
+            <hr class="my-4" />
+            <p class="mb-5">
+              <input
+                style="display: inline-block; vertical-align: middle"
+                type="text"
+                ng-model="field"
+                class="form-control"
+                placeholder="Search..."
+                required="true"
+              />
+              <br />
+              <br />
+              <a
+                href="#"
+                class="plate"
+                ng-click="changeView(1)"
+                style="background-color: #2E7D32"
+                >Playable ({{views[1].length}})</a
+              >
+              <a
+                href="#"
+                class="plate"
+                ng-click="changeView(2)"
+                style="background-color: #795548"
+                >Patch Necessary ({{views[2].length}})</a
+              >
+              <a
+                href="#"
+                class="plate"
+                ng-click="changeView(3)"
+                style="background-color: #B71C1C"
+                >Patch Required ({{views[3].length}})</a
+              >
+              <a
+                href="#"
+                class="plate"
+                ng-click="changeView(4)"
+                style="background-color: #000000"
+                >Always Online ({{views[4].length}})</a
+              >
+              <a
+                href="#"
+                class="plate"
+                ng-click="changeView(0)"
+                style="background-color: #1976D2"
+                >All ({{views[0].length}})</a
+              >
+              <center>
+                <table>
+                  <tr>
+                    <td>
+                      <small
+                        ><font color="#2E7D32"
+                          >Playable
+                          ({{((views[1].length/views[0].length)*100).toFixed(2)}}%):</font
+                        >
+                        <br>
+                        <font color="#ffffff"
+                          >Games that have all content shipped on-disc and can be played 
+                          start to finish without an internet connection.
+                        </font></small
+                      >
+                    </td>
+                    <td width="50%">
+                      <div class="progress">
+                        <div
+                          class="progress-bar progress-bar-striped progress-bar-animated"
+                          style="width:{{(views[1].length/views[0].length)*100}}%; background-color: #2E7D32;"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <small
+                        ><font color="#795548"
+                          >Patch Necessary
+                          ({{((views[2].length/views[0].length)*100).toFixed(2)}}%):</font
+                        >
+                        <br>
+                        <font color="#ffffff"
+                          >Games with all content shipped on-disc but launched in an unplayable
+                          state in regards to bugs and general stability/performance.
+                        </font></small
+                      >
+                    </td>
+                    <td width="50%">
+                      <div class="progress">
+                        <div
+                          class="progress-bar progress-bar-striped progress-bar-animated"
+                          style="width:{{(views[2].length/views[0].length)*100}}%; background-color: #795548;"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <small
+                        ><font color="#B71C1C"
+                          >Patch Required
+                          ({{((views[3].length/views[0].length)*100).toFixed(2)}}%):</font
+                        >
+                        <br>
+                        <font color="#ffffff"
+                          >Games that require a Title Update to be played.
+                        </font></small
+                      >
+                    </td>
+                    <td width="50%">
+                      <div class="progress">
+                        <div
+                          class="progress-bar progress-bar-striped progress-bar-animated"
+                          style="width:{{(views[3].length/views[0].length)*100}}%; background-color: #B71C1C;"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <small
+                        ><href style="color: #FFFFFF; background-color: #000000;"
+                          >Always Online
+                          ({{((views[4].length/views[0].length)*100).toFixed(2)}}%):</href
+                        >
+                        <br>
+                        <font color="#ffffff"
+                          >Games that require an active Internet Connection at all times.
+                        </font></small
+                      >
+                    </td>
+                    <td width="50%">
+                      <div class="progress">
+                        <div
+                          class="progress-bar progress-bar-striped progress-bar-animated"
+                          style="width:{{(views[4].length/views[0].length)*100}}%; background-color: #424242;"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+                <br />
+                <br />
+
+                <table class="table-hover table-bordered table-striped">
+                  <thead>
+                    <tr>
+                      <td style="text-align: center;">
+                        <font color="#f186c0"><small>Title</small></font>
+                      </td>
+                      <td style="text-align: center;">
+                        <font color="#f186c0"><small>Platform</small></font>
+                      </td>
+                      <td style="text-align: center;">
+                        <font color="#f186c0"><small>Status</small></font>
+                      </td>
+                      <td style="text-align: center;">
+                        <font color="#f186c0"><small>Offers Patches</small></font>
+                      </td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      ng-repeat="entry in data | filter: filterEntries(field)"
+                    >
+                      <td align="left" style="padding-left: 10px; padding-right: 10px;"p>
+                        <a href="{{entry.html_url}}"
+                          ><small>{{entry.title}}</small></a
+                        >
+                      </td>
+                      <td style="text-align: center" bgcolor="{{entry.plat_color}}">
+                        <font color="white"><small>{{entry.plat}}</small></font>
+                      </td>
+                      <td style="text-align: center; padding-left: 10px; padding-right: 10px;" bgcolor="{{entry.color}}">
+                        <font color="white"><small>{{entry.tag}}</small></font>
+                      </td>
+                      <td style="text-align: center;" bgcolor="{{entry.patch_color}}">
+                        <font color="white"><small>{{entry.patch}}</small></font>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="text-white" id="copyright">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto text-center">
+            <p class="mb-5">Template by Rinnegatamante. Modified by me! 🏳️‍⚧️</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="vendor/scrollreveal/scrollreveal.min.js"></script>
+    <script src="vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
+
+    <!-- Custom scripts for this template -->
+    <script src="js/creative.min.js"></script>
+  </body>
+</html>

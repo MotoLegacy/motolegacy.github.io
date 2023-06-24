@@ -143,8 +143,8 @@
                   }
                   if (data[i].status > 0) {
                     $scope.views[data[i].status].push(data[i]);
+                    $scope.views[0].push(data[i]);
                   }
-                  $scope.views[0].push(data[i]);
                   $scope.data = $scope.views[0];
                   $scope.data = $filter("orderBy")($scope.data, "title", false);
                 }

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="EN-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3/build/web/hack-subset.css">
+
+    <title>SAVETHEM - v1.0.1</title>
+
+    <meta name="title" content="SAVETHEM">
+    <meta name="description" content="MIT Licensed Remake of the Five Nights at Freddy's 2 minigame">
+    <meta name="keywords" content="raylib, games, html5, C, fnaf, videogames, freddy, savethem, minigame,">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Open Graph metatags for sharing -->
+    <meta property="og:title" content="SAVETHEM">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image" content="gfred.jpeg">
+    <meta property="og:site_name" content="raylib.com">
+    <meta property="og:url" content="https://motolegacy.github.io/savethem/index.html">
+    <meta property="og:description" content="MIT Licensed Remake of the Five Nights at Freddy's 2 minigame">
+
+    <!-- Twitter metatags for sharing -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@_ibdev">
+    <meta name="twitter:title" content="SAVETHEM">
+    <meta name="twitter:image" content="gfred.jpeg">
+    <meta name="twitter:url" content="https://motolegacy.github.io/savethem/index.html">
+    <meta name="twitter:description" content="MIT Licensed Remake of the Five Nights at Freddy's 2 minigame">
+
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <style>
+      body {
+        font-family: arial;
+        margin: 0;
+      }
+
+      #gamecontent {
+        background: url("background.jpeg") no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        padding: none;
+      }
+
+      #header {
+        width: 100%;
+        height: 60px;
+        background-color: black;
+      }
+
+      #footer {
+        background-color: black;
+        padding: 120px;
+      }
+
+      #logo {
+        width:465px;
+        height:48px;
+        float:left;
+        position:relative;
+        margin:4px;
+        background-image:url("header.png");
+      }
+
+      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
+      div.emscripten { text-align: center; }
+      div.emscripten_border { border: 1px solid black; }
+
+      canvas.emscripten {
+        border: 0px none;
+        background: black;
+        display: block;
+        margin-left: 18%;
+        margin-right: 20%;
+        width: 65%;
+      }
+
+      .spinner {
+        height: 30px;
+        width: 30px;
+        margin: 0;
+        margin-top: 10px;
+        margin-left: 10px;
+        display: inline-block;
+        vertical-align: top;
+        -webkit-animation: rotation .8s linear infinite;
+        -moz-animation: rotation .8s linear infinite;
+        -o-animation: rotation .8s linear infinite;
+        animation: rotation 0.8s linear infinite;
+        border-left: 5px solid black;
+        border-right: 5px solid black;
+        border-bottom: 5px solid black;
+        border-top: 5px solid red;
+        border-radius: 100%;
+        background-color: rgb(245, 245, 245);
+      }
+      @-webkit-keyframes rotation {
+        from {-webkit-transform: rotate(0deg);}
+        to {-webkit-transform: rotate(360deg);}
+      }
+      @-moz-keyframes rotation {
+        from {-moz-transform: rotate(0deg);}
+        to {-moz-transform: rotate(360deg);}
+      }
+      @-o-keyframes rotation {
+        from {-o-transform: rotate(0deg);}
+        to {-o-transform: rotate(360deg);}
+      }
+      @keyframes rotation {
+        from {transform: rotate(0deg);}
+        to {transform: rotate(360deg);}
+      }
+
+      #status {
+        display: inline-block;
+        vertical-align: top;
+        margin-top: 25px;
+        margin-left: 20px;
+        font-weight: bold;
+        color: darkred;
+      }
+
+      #progress {
+        height: 0px;
+        width: 0px;
+      }
+
+      #controls {
+        display: inline-block;
+        float: right;
+        vertical-align: top;
+        margin-top: 5px;
+        margin-right: 20px;
+      }
+
+      #output {
+        width: 100%;
+        height: 140px;
+        margin: 0 auto;
+        margin-top: 10px;
+        display: block;
+        background-color: black;
+        color: rgb(37, 174, 38);
+        font-family: 'Lucida Console', Monaco, monospace;
+        outline: none;
+      }
+
+      input[type=button] {
+        background-color: #ad0202;
+        border: 4px solid #4a0101;
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+        width: 140px;
+        height: 50px;
+      }
+
+      input[type=button]:hover {
+        background-color: #f5f5f5ff;
+        border-color: #1c1c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+        <a id="logo" href="https://www.raylib.com"></a>
+
+        <div class="spinner" id='spinner'></div>
+        <div class="emscripten" id="status">Downloading...</div>
+
+        <span id='controls'>
+          <span><input type="button" value="FULLSCREEN" onclick="Module.requestFullscreen(false, false)"></span>
+          <span><input type="button" id="btn-audio" value="MUTE" onclick="toggleAudio()"></span>
+        </span>
+
+        <div class="emscripten">
+          <progress value="0" max="100" id="progress" hidden=1></progress>
+        </div>
+    </div>
+    <div id="gamecontent">
+    <center>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+    </center>
+    </div>
+    <div id="footer">
+      <center>
+        <img style="width: 40%;" src="banner.jpeg">
+        <p style="font-family:Hack; color:white; font-style:italic;">MIT Licensed Remake of the Five Nights at Freddy's 2 minigame</p>
+      </center>
+      <br>
+      <p style="font-family:Hack; font-size:20px; color:white; text-indent: 50px">
+        A quick and dirty project made with <a href="https://github.com/raysan5/raylib">raylib</a>,
+        designed to draw attention to <a href="https://github.com/MotoLegacy/OpenFNaF">OpenFNaF</a>,
+        an attempt at re-implementing the first few Five Nights at Freddy's titles using a memory
+        efficient, port-able engine. The project had been abandoned due to time constraints,
+        and it had never gotten very far. If you would like to support me and see development
+        start again, consider supporting on <a href="https://patreon.com/cypressimplex">Patreon</a> or
+        donate one-time through <a href="https://paypal.me/ibdev">PayPal</a>! I also work on other
+        projects that will probably interest you, check those out on <a href="https://github.com/MotoLegacy">
+        GitHub</a>.
+      </p>
+      <br>
+      <p style="font-family:Hack; font-size:20px; color:white; text-indent: 50px">
+        The source code for this minigame is available via <a href="https://github.com/MotoLegacy/SAVETHEM">
+        GitHub</a> as well. It took around ~15 hours to complete, start to finish. This includes setting up
+        development environments, re-drawing all of the sprites, hunting down the audio used, etc.
+      </p>
+    </div>
+    <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
+    <script type='text/javascript'>
+        function saveFileFromMEMFSToDisk(memoryFSname, localFSname)     // This can be called by C/C++ code
+        {
+            var isSafari = false; // Not supported, navigator.userAgent access is being restricted
+            //var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            var data = FS.readFile(memoryFSname);
+            var blob;
+
+            if (isSafari) blob = new Blob([data.buffer], { type: "application/octet-stream" });
+            else blob = new Blob([data.buffer], { type: "application/octet-binary" });
+
+            // NOTE: SaveAsDialog is a browser setting. For example, in Google Chrome,
+            // in Settings/Advanced/Downloads section you have a setting:
+            // 'Ask where to save each file before downloading' - which you can set true/false.
+            // If you enable this setting it would always ask you and bring the SaveAsDialog
+            saveAs(blob, localFSname);
+        }
+    </script>
+    <script type='text/javascript'>
+        var statusElement = document.querySelector('#status');
+        var progressElement = document.querySelector('#progress');
+        var spinnerElement = document.querySelector('#spinner');
+        var Module = {
+            preRun: [],
+            postRun: [],
+            print: (function() {
+                var element = document.querySelector('#output');
+
+                if (element) element.value = '';    // Clear browser cache
+
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+
+                    if (element) {
+                        element.value += text + "\n";
+                        element.scrollTop = element.scrollHeight; // focus on bottom
+                    }
+                };
+            })(),
+            printErr: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+
+                console.error(text);
+            },
+            canvas: (function() {
+                var canvas = document.querySelector('#canvas');
+
+                canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+                return canvas;
+            })(),
+            setStatus: function(text) {
+                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Module.setStatus.last.text) return;
+
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+
+                if (m && now - Module.setStatus.last.time < 30) return; // If this is a progress update, skip it if too soon
+
+                Module.setStatus.last.time = now;
+                Module.setStatus.last.text = text;
+
+                if (m) {
+                    text = m[1];
+                    progressElement.value = parseInt(m[2])*100;
+                    progressElement.max = parseInt(m[4])*100;
+                    progressElement.hidden = true;
+                    spinnerElement.hidden = false;
+                } else {
+                    progressElement.value = null;
+                    progressElement.max = null;
+                    progressElement.hidden = true;
+                    if (!text) spinnerElement.style.display = 'none';
+                }
+
+                statusElement.innerHTML = text;
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            },
+            //noInitialRun: true
+        };
+
+        Module.setStatus('Downloading...');
+
+        window.onerror = function() {
+            Module.setStatus('Exception thrown, see JavaScript console');
+            spinnerElement.style.display = 'none';
+            Module.setStatus = function(text) { if (text) Module.printErr('[post-exception status] ' + text); };
+        };
+    </script>
+
+    <!-- REF: https://developers.google.com/web/updates/2018/11/web-audio-autoplay -->
+    <script type='text/javascript'>
+        var audioBtn = document.querySelector('#btn-audio');
+
+        // An array of all contexts to resume on the page
+        const audioContexList = [];
+        (function() {
+            // A proxy object to intercept AudioContexts and
+            // add them to the array for tracking and resuming later
+            self.AudioContext = new Proxy(self.AudioContext, {
+                construct(target, args) {
+                    const result = new target(...args);
+                    audioContexList.push(result);
+                    if (result.state == "suspended") audioBtn.value = "UNMUTE";
+                    return result;
+                }
+            });
+        })();
+
+        function toggleAudio() {
+            var resumed = false;
+            audioContexList.forEach(ctx => {
+                if (ctx.state == "suspended") { ctx.resume(); resumed = true; }
+                else if (ctx.state == "running") ctx.suspend();
+            });
+
+            if (resumed) audioBtn.value = "MUTE";
+            else audioBtn.value = "UNMUTE";
+        }
+    </script>
+    <script async type="text/javascript" src="savethem.js"></script>
+  </body>
+</html>
